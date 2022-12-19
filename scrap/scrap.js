@@ -1,4 +1,6 @@
 const puppeteer = require("puppeteer");
+const fs = require("fs");
+const { Console } = require("console");
 
 let data = {
   list: [],
@@ -11,7 +13,7 @@ async function main(skill) {
   const page = await browser.newPage();
   //   url - to incorporate scripting - https://in.indeed.com/jobs?q=developer+fresher&l=NCR%2C+Delhi
 
-  await page.goto(`https://in.indeed.com/jobs?q={skill}&l=NCR%2C+Delhi`),
+  await page.goto(`https://in.indeed.com/jobs?q=${skill}&l=NCR%2C+Delhi`),
     {
       timeout: 0,
       waitUntil: "networkidle0",
@@ -26,7 +28,7 @@ async function main(skill) {
 
     // fetch and return 'data' object with job title, link, salary and companyName as properties
     const items = document.querySelectorAll("td.resultContent");
-    items.map((item, index) => {
+    items.forEach((item, index) => {
       let title =
         item.querySelector("h2.jobTitle>a") &&
         item.querySelector("h2.jobTitle>a").innerText;
@@ -54,8 +56,18 @@ async function main(skill) {
 
     return data;
   }, data);
+
+  let response = await jobData;
+  let jsondata = await JSON.stringify(jobData, null, 2);
+
+  // write it inside a file
+  fs.writeFile("job.json", jsondata, "uTF-8", () => {
+    console.log("written data in job.json");
+  });
+
   // close browser after seacrch
   browser.close();
+  return response;
 }
 
 module.exports = main;
